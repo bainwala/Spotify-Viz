@@ -1,11 +1,31 @@
 "use client";
 import React, { useState, useEffect } from "react";
 import { Button } from "@/components/ui/button";
+import { User } from "@/models/User";
 import axios from "axios";
+import { useRouter } from "next/navigation";
 
 function Dashboard() {
-  const [accessToken, setAccessToken] = useState<string | undefined>("");
-  const [name, setName] = useState<string | undefined>("");
+  const [accessToken, setAccessToken] = useState<string>("");
+  const [user, setUser] = useState<User>();
+  const router = useRouter();
+
+  const createQueryString = (name: string, value: string) => {
+    const params = new URLSearchParams();
+    params.set(name, value);
+
+    return params.toString();
+  };
+
+  const getMe = async () => {
+    const { data } = await axios.get("https://api.spotify.com/v1/me", {
+      headers: {
+        Authorization: "Bearer " + accessToken,
+      },
+    });
+    console.log(data);
+    setUser({ ...data });
+  };
 
   const handleLogin = async () => {
     const clientId = process.env.NEXT_PUBLIC_SPOTIFY_CLIENT_ID;
@@ -18,33 +38,43 @@ function Dashboard() {
     window.location.href = authURL;
   };
 
-  const getMe = async (token: string) => {
-    const { data } = await axios.get("https://api.spotify.com/v1/me", {
-      headers: {
-        Authorization: "Bearer " + token,
-      },
-    });
-    setName(data.display_name);
-    console.log(data);
-  };
+  useEffect(() => {
+    if (accessToken != "") getMe();
+  }, [accessToken]);
 
   useEffect(() => {
     const params = new URLSearchParams(window.location.hash.slice(1));
     const accessToken = params.get("access_token");
 
-    if (accessToken) {
+    if (accessToken && accessToken != "") {
       setAccessToken(accessToken);
-      getMe(accessToken);
     }
   }, []);
+
+  const GoToSpotify = () => {
+    const popup = window.open(user?.external_urls.spotify);
+  };
 
   return (
     <div className="flex justify-center items-center mt-12">
       {accessToken === "" ? (
         <Button onClick={handleLogin}>Connect Spotify</Button>
       ) : (
-        <div>
-          <h1>{"Hi " + name + "!"}</h1>
+        <div className="flex flex-col items-center space-y-4">
+          <h1>{"Hi " + user?.display_name + "!"}</h1>
+          <div className="flex flex-row space-x-4 items-center">
+            <h1>Followers: {user?.followers.total}</h1>
+            <Button onClick={() => GoToSpotify()}>Go To Spotify</Button>
+          </div>
+          <Button
+            onClick={() =>
+              router.push(
+                "/playlists" + "?" + createQueryString("token", accessToken)
+              )
+            }
+          >
+            Playlists
+          </Button>
         </div>
       )}
     </div>
