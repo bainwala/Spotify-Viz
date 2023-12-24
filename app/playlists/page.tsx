@@ -1,25 +1,29 @@
 "use client";
 import { useSearchParams } from "next/navigation";
 import React, { useEffect, useState } from "react";
+import { Button } from "@/components/ui/button";
 import axios from "axios";
 import { Playlist } from "@/models/Playlist";
+import { useRouter } from "next/navigation";
 
-type PlaylistReturnProps = {
-  items: [
-    {
-      description: string;
-      name: string;
-      id: string;
-    }
-  ];
+type PlaylistsReturnProps = {
+  items: [Playlist];
 };
 
-function PlayList() {
+function PlayLists() {
   const searchParams = useSearchParams();
   const [playlists, setPlaylists] = useState<Playlist[]>();
+  const router = useRouter();
+
+  const createQueryString = (name: string, value: string) => {
+    const params = new URLSearchParams();
+    params.set(name, value);
+
+    return params.toString();
+  };
 
   const getUserPlaylists = async () => {
-    const { data } = await axios.get<PlaylistReturnProps>(
+    const { data } = await axios.get<PlaylistsReturnProps>(
       "https://api.spotify.com/v1/me/playlists",
       {
         headers: {
@@ -43,12 +47,24 @@ function PlayList() {
   }, []);
 
   return (
-    <div className="flex justify-center items-center mt-12 flex-col">
+    <div className="flex justify-center items-center mt-12 flex-col space-y-4">
       {playlists?.map((playlist) => (
-        <h1>{playlist.name}</h1>
+        <Button
+          key={playlist.id}
+          onClick={() =>
+            router.push(
+              "/playlists/" +
+                playlist.id +
+                "?" +
+                createQueryString("token", searchParams.get("token")!)
+            )
+          }
+        >
+          {playlist.name}
+        </Button>
       ))}
     </div>
   );
 }
 
-export default PlayList;
+export default PlayLists;
