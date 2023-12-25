@@ -3,6 +3,7 @@ import React, { useEffect, useState } from "react";
 import { useSearchParams } from "next/navigation";
 import { Track } from "@/models/Track";
 import axios from "axios";
+import ThreeScene from "@/components/ThreeScene";
 
 type Props = {
   params: {
@@ -42,13 +43,14 @@ function page({ params: { id } }: Props) {
 
   useEffect(() => {
     getTracks();
-  });
+  }, []);
 
   return (
     <div className="flex justify-center items-center mt-12 flex-col space-y-4">
-      {tracks?.map((track) => (
+      {/* {tracks?.map((track) => (
         <h1>{track.name}</h1>
-      ))}
+      ))} */}
+      <ThreeScene />
     </div>
   );
 }

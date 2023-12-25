@@ -23,7 +23,6 @@ function Dashboard() {
         Authorization: "Bearer " + accessToken,
       },
     });
-    console.log(data);
     setUser({ ...data });
   };
 
