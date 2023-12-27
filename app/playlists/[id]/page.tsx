@@ -43,14 +43,16 @@ function page({ params: { id } }: Props) {
 
   useEffect(() => {
     getTracks();
+
+    return () => {
+      const canvas = document.querySelector(".THREE-Canvas");
+      canvas?.remove();
+    };
   }, []);
 
   return (
     <div className="flex justify-center items-center mt-12 flex-col space-y-4">
-      {/* {tracks?.map((track) => (
-        <h1>{track.name}</h1>
-      ))} */}
-      <ThreeScene />
+      {tracks?.length ? <ThreeScene tracks={tracks} /> : null}
     </div>
   );
 }
