@@ -6,8 +6,9 @@ import browood_font from "../assets/Browood_Regular.json";
 import { TextGeometry } from "three/addons/geometries/TextGeometry.js";
 import { FontLoader } from "three/addons/loaders/FontLoader.js";
 import { OrbitControls } from "three/addons/controls/OrbitControls.js";
+import Stats from "three/examples/jsm/libs/stats.module.js";
 import { Track } from "@/models/Track";
-import Loader from "./Loader";
+import { GUI } from "dat.gui";
 
 type ThreeSceneProps = {
   tracks: Track[];
@@ -34,15 +35,22 @@ const ThreeScene: React.FC<ThreeSceneProps> = ({ tracks }: ThreeSceneProps) => {
 
     renderer = new THREE.WebGLRenderer();
     renderer.setSize(window.innerWidth, window.innerHeight);
-    document.body.appendChild(renderer.domElement).className = "THREE-Canvas";
+    containerRef.current?.appendChild(renderer.domElement);
     const controls = new OrbitControls(camera, renderer.domElement);
     const moveSpeed = 0.5;
 
+    const stats = new Stats();
+    containerRef.current?.appendChild(stats.dom);
+    const gui = new GUI();
+    const FeatureFolder = gui.addFolder("Feature");
+    FeatureFolder.add({ switch: false }, "switch").name("light switch");
+    gui.open();
+
     const font = new FontLoader().parse(browood_font);
     const material = new THREE.MeshBasicMaterial({ color: "green" });
-    var xCoordinate = 0;
-    console.log("Adding Tracks...");
+    var songIndex = 0;
     var z = 0;
+
     for (var track of tracks) {
       const textGeometry = new TextGeometry(track.name, {
         font: font,
@@ -51,13 +59,13 @@ const ThreeScene: React.FC<ThreeSceneProps> = ({ tracks }: ThreeSceneProps) => {
       });
 
       const row = Math.floor(Math.sqrt(5));
-      const x = (xCoordinate % row) * 3 - (row - 1);
-      z = Math.floor(xCoordinate / row) * 3 - (row - 1);
+      const x = (songIndex % row) * 3 - (row - 1);
+      z = Math.floor(songIndex / row) * 3 - (row - 1);
 
       const text = new THREE.Mesh(textGeometry, material);
       text.position.set(x * 0.5, 0, z);
       scene.add(text);
-      xCoordinate = xCoordinate + 1;
+      songIndex = songIndex + 1;
     }
     console.log("Tracks Added...");
     const targetPosition = new THREE.Vector3(0, 0, z);
@@ -66,14 +74,10 @@ const ThreeScene: React.FC<ThreeSceneProps> = ({ tracks }: ThreeSceneProps) => {
     function onKeyDown(event: KeyboardEvent) {
       switch (event.code) {
         case "ArrowUp":
-        case "KeyW":
         case "ArrowDown":
-        case "KeyS":
         case "ArrowLeft":
-        case "KeyA":
         case "ArrowRight":
-        case "KeyD":
-          event.preventDefault(); // Prevent default behavior (scrolling)
+          event.preventDefault();
           break;
         default:
           break;
@@ -81,21 +85,11 @@ const ThreeScene: React.FC<ThreeSceneProps> = ({ tracks }: ThreeSceneProps) => {
 
       switch (event.code) {
         case "ArrowUp":
-        case "KeyW":
           targetPosition.z -= moveSpeed;
           break;
-        // case "ArrowLeft":
-        // case "KeyA":
-        //   targetPosition.x -= moveSpeed;
-        //   break;
         case "ArrowDown":
-        case "KeyS":
           targetPosition.z += moveSpeed;
           break;
-        // case "ArrowRight":
-        // case "KeyD":
-        //   targetPosition.x += moveSpeed;
-        //   break;
         default:
           break;
       }
@@ -136,12 +130,7 @@ const ThreeScene: React.FC<ThreeSceneProps> = ({ tracks }: ThreeSceneProps) => {
     }
   }, []);
 
-  return (
-    <div>
-      <Loader />
-      <div className="w-1/2 h-1/2" ref={containerRef}></div>
-    </div>
-  );
+  return <div className="w-1/2 h-1/2 THREE-Canvas" ref={containerRef}></div>;
 };
 
 export default ThreeScene;
