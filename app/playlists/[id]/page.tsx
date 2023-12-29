@@ -3,6 +3,7 @@ import React, { useEffect, useState } from "react";
 import { useSearchParams } from "next/navigation";
 import { Track } from "@/models/Track";
 import axios from "axios";
+import ThreeScene from "@/components/ThreeScene";
 
 type Props = {
   params: {
@@ -35,6 +36,7 @@ function page({ params: { id } }: Props) {
     for (var track of data.items) {
       tempTrackArray.push({
         name: track.track.name,
+        artists: track.track.artists,
       });
     }
     setTracks([...tempTrackArray]);
@@ -42,13 +44,16 @@ function page({ params: { id } }: Props) {
 
   useEffect(() => {
     getTracks();
-  });
+
+    return () => {
+      const canvas = document.querySelector(".THREE-Canvas");
+      canvas?.remove();
+    };
+  }, []);
 
   return (
     <div className="flex justify-center items-center mt-12 flex-col space-y-4">
-      {tracks?.map((track) => (
-        <h1>{track.name}</h1>
-      ))}
+      {tracks?.length ? <ThreeScene tracks={tracks} /> : null}
     </div>
   );
 }
