@@ -36,6 +36,7 @@ function page({ params: { id } }: Props) {
     for (var track of data.items) {
       tempTrackArray.push({
         name: track.track.name,
+        artists: track.track.artists,
       });
     }
     setTracks([...tempTrackArray]);
